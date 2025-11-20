@@ -3,6 +3,14 @@ import React, { useState } from 'react';
 const NewProjectForm = ({ onSubmit, onCancel }) => {
   const [projectName, setProjectName] = useState('');
 
+  const cities = [
+    'Austin',
+    'Dallas',
+    'San Antonio',
+    'Corpus Christi',
+    'Houston'
+  ];
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (projectName.trim()) {
@@ -18,17 +26,22 @@ const NewProjectForm = ({ onSubmit, onCancel }) => {
       </div>
       <div className="new-project-form-body">
         <label htmlFor="project-name" className="new-project-form-label">
-          Project Name
+          Select City
         </label>
-        <input
-          type="text"
+        <select
           id="project-name"
           className="new-project-form-input"
-          placeholder="Enter project name"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           autoFocus
-        />
+        >
+          <option value="">-- Select a city --</option>
+          {cities.map((city) => (
+            <option key={city} value={city}>
+              {city}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="new-project-form-footer">
         <button

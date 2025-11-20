@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Folder, Trash2 } from 'lucide-react';
 import { formatBytes } from '../utils/api';
 
-const ProjectList = ({ projects, activeProjectId, onSelectProject, onRenameProject, onDeleteProject, onReorderProjects }) => {
+const ProjectList = ({ projects, activeProjectId, getDisplayName, onSelectProject, onRenameProject, onDeleteProject, onReorderProjects }) => {
   const [editingProjectId, setEditingProjectId] = useState(null);
   const [editingName, setEditingName] = useState('');
+  const [editingPrefix, setEditingPrefix] = useState(''); // Store CITY-TYPE- prefix
   const [draggedItemId, setDraggedItemId] = useState(null);
   const [draggedOverItemId, setDraggedOverItemId] = useState(null);
   const inputRef = useRef(null);
@@ -19,15 +20,27 @@ const ProjectList = ({ projects, activeProjectId, onSelectProject, onRenameProje
 
   const handleStartEdit = (project) => {
     setEditingProjectId(project.id);
-    setEditingName(project.name);
+    // Extract just the name part for editing
+    const displayName = getDisplayName(project.name);
+    setEditingName(displayName);
+    // Store the prefix to reconstruct full name on save
+    const parts = project.name.split('-');
+    if (parts.length >= 3) {
+      setEditingPrefix(`${parts[0]}-${parts[1]}-`);
+    } else {
+      setEditingPrefix('');
+    }
   };
 
   const handleSaveEdit = () => {
     if (editingProjectId && onRenameProject) {
-      const success = onRenameProject(editingProjectId, editingName);
+      // Reconstruct full name with prefix
+      const fullName = editingPrefix ? `${editingPrefix}${editingName}` : editingName;
+      const success = onRenameProject(editingProjectId, fullName);
       if (success !== false) {
         setEditingProjectId(null);
         setEditingName('');
+        setEditingPrefix('');
       }
     }
   };
@@ -35,6 +48,7 @@ const ProjectList = ({ projects, activeProjectId, onSelectProject, onRenameProje
   const handleCancelEdit = () => {
     setEditingProjectId(null);
     setEditingName('');
+    setEditingPrefix('');
   };
 
   const handleKeyDown = (e) => {
@@ -123,16 +137,29 @@ const ProjectList = ({ projects, activeProjectId, onSelectProject, onRenameProje
             </div>
             <div className="project-item-content">
               {isEditing ? (
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className="project-item-input"
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onBlur={handleSaveEdit}
-                  onClick={(e) => e.stopPropagation()}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  {editingPrefix && (
+                    <span style={{
+                      color: 'var(--text-tertiary)',
+                      fontSize: 'var(--font-size-sm)',
+                      marginRight: '2px',
+                      userSelect: 'none'
+                    }}>
+                      {editingPrefix}
+                    </span>
+                  )}
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="project-item-input"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleSaveEdit}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ flex: 1, minWidth: 0 }}
+                  />
+                </div>
               ) : (
                 <div
                   className="project-item-name"
@@ -141,7 +168,7 @@ const ProjectList = ({ projects, activeProjectId, onSelectProject, onRenameProje
                     handleStartEdit(project);
                   }}
                 >
-                  {project.name}
+                  {getDisplayName(project.name)}
                 </div>
               )}
               <div className="project-item-count">

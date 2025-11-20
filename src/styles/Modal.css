@@ -103,3 +103,172 @@
   outline: 2px solid #ef4444;
   outline-offset: 2px;
 }
+
+/* City Selection Modal Styles */
+.city-selection-modal {
+  max-width: 500px;
+}
+
+.city-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.city-selection-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+
+.city-selection-button:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.city-selection-button:active {
+  transform: translateY(0);
+}
+
+.city-selection-button:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.city-abbreviation {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--accent-blue);
+  letter-spacing: 0.5px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.city-name {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Project Type Selection Styles */
+.project-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.project-type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+
+.project-type-button:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.project-type-button:active {
+  transform: translateY(0);
+}
+
+.project-type-button:focus {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.project-type-abbreviation {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--accent-blue);
+  letter-spacing: 0.5px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.project-type-name {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Project Name Input Styles */
+.project-name-form {
+  width: 100%;
+}
+
+.project-name-input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  transition: border-color 0.2s ease;
+}
+
+.project-name-input-wrapper:focus-within {
+  border-color: var(--accent-blue);
+  background-color: var(--bg-primary);
+}
+
+.project-name-prefix {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--accent-blue);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.project-name-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  outline: none;
+  padding: 0;
+  margin-left: 2px;
+}
+
+.project-name-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+.modal-button-primary {
+  background-color: var(--accent-blue);
+  color: #ffffff;
+}
+
+.modal-button-primary:hover:not(:disabled) {
+  background-color: #0056d6;
+}
+
+.modal-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

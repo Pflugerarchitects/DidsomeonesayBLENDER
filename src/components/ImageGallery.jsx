@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, memo } from 'react';
 import { Trash2, Download } from 'lucide-react';
 import LazyImage from './LazyImage';
 import { getImageUrl } from '../utils/api';
 
-const ImageGallery = ({ images, onDeleteImage }) => {
+const ImageGallery = memo(({ images, onDeleteImage }) => {
   const imageWindowRef = useRef(null);
 
   const handleDownload = (e, image) => {
@@ -120,6 +120,8 @@ const ImageGallery = ({ images, onDeleteImage }) => {
       })}
     </div>
   );
-};
+});
+
+ImageGallery.displayName = 'ImageGallery';
 
 export default ImageGallery;

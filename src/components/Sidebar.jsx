@@ -1,24 +1,72 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, Plus, HardDrive } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Plus, HardDrive, Filter, X } from 'lucide-react';
 import ProjectList from './ProjectList';
 import { formatBytes } from '../utils/api';
 
-const Sidebar = ({ projects, activeProjectId, isCollapsed, onToggleCollapse, onSelectProject, onCreateProject, onRenameProject, onDeleteProject, onReorderProjects, storageUsed, storageLimit }) => {
+const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onToggleCollapse, onSelectProject, onCreateProject, onRenameProject, onDeleteProject, onReorderProjects, storageUsed, storageLimit }) => {
+  const [selectedCities, setSelectedCities] = useState([]);
+  const [selectedProjectTypes, setSelectedProjectTypes] = useState([]);
+
+  const cities = [
+    { abbreviation: 'DAL', name: 'Dallas' },
+    { abbreviation: 'AUS', name: 'Austin' },
+    { abbreviation: 'HOU', name: 'Houston' },
+    { abbreviation: 'SA', name: 'San Antonio' },
+    { abbreviation: 'CC', name: 'Corpus Christi' }
+  ];
+
+  const projectTypes = [
+    { abbreviation: 'ES', name: 'Elementary School' },
+    { abbreviation: 'MS', name: 'Middle School' },
+    { abbreviation: 'HS', name: 'High School' },
+    { abbreviation: 'HE', name: 'Higher Education' },
+    { abbreviation: 'BP', name: 'Bond Proposal' },
+    { abbreviation: 'UQ', name: 'Unique' }
+  ];
 
   const handleCreateProject = () => {
-    // Generate a default name for the new project
-    let baseName = 'New Project';
-    let projectName = baseName;
-    let counter = 2;
-
-    // Check if name already exists, if so, add a number
-    while (projects.some(p => p.name === projectName)) {
-      projectName = `${baseName} ${counter}`;
-      counter++;
-    }
-
-    onCreateProject(projectName);
+    onCreateProject();
   };
+
+  // Filter projects based on selected cities and project types
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      // Parse project name format: CITY-TYPE-name
+      const parts = project.name.split('-');
+      if (parts.length < 2) return true; // Show projects that don't follow the format
+
+      const projectCity = parts[0];
+      const projectType = parts[1];
+
+      const cityMatch = selectedCities.length === 0 || selectedCities.includes(projectCity);
+      const typeMatch = selectedProjectTypes.length === 0 || selectedProjectTypes.includes(projectType);
+
+      return cityMatch && typeMatch;
+    });
+  }, [projects, selectedCities, selectedProjectTypes]);
+
+  const handleToggleCity = (cityAbbr) => {
+    setSelectedCities(prev =>
+      prev.includes(cityAbbr)
+        ? prev.filter(c => c !== cityAbbr)
+        : [...prev, cityAbbr]
+    );
+  };
+
+  const handleToggleProjectType = (typeAbbr) => {
+    setSelectedProjectTypes(prev =>
+      prev.includes(typeAbbr)
+        ? prev.filter(t => t !== typeAbbr)
+        : [...prev, typeAbbr]
+    );
+  };
+
+  const handleClearFilters = () => {
+    setSelectedCities([]);
+    setSelectedProjectTypes([]);
+  };
+
+  const hasActiveFilters = selectedCities.length > 0 || selectedProjectTypes.length > 0;
 
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -40,6 +88,51 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, onToggleCollapse, onS
       {!isCollapsed && (
         <>
           <div className="sidebar-content">
+            <div className="project-filters">
+              <div className="project-filter-group">
+                <div className="project-filter-header">
+                  <label className="project-filter-label">City</label>
+                  {hasActiveFilters && (
+                    <button
+                      className="project-filters-clear"
+                      onClick={handleClearFilters}
+                      title="Clear all filters"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <div className="filter-bubbles">
+                  {cities.map(city => (
+                    <button
+                      key={city.abbreviation}
+                      className={`filter-bubble ${selectedCities.includes(city.abbreviation) ? 'active' : ''}`}
+                      onClick={() => handleToggleCity(city.abbreviation)}
+                      title={city.name}
+                    >
+                      {city.abbreviation}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="project-filter-group">
+                <label className="project-filter-label">Type</label>
+                <div className="filter-bubbles">
+                  {projectTypes.map(type => (
+                    <button
+                      key={type.abbreviation}
+                      className={`filter-bubble ${selectedProjectTypes.includes(type.abbreviation) ? 'active' : ''}`}
+                      onClick={() => handleToggleProjectType(type.abbreviation)}
+                      title={type.name}
+                    >
+                      {type.abbreviation}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <button
               className="sidebar-add-button"
               onClick={handleCreateProject}
@@ -49,8 +142,9 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, onToggleCollapse, onS
             </button>
 
             <ProjectList
-              projects={projects}
+              projects={filteredProjects}
               activeProjectId={activeProjectId}
+              getDisplayName={getDisplayName}
               onSelectProject={onSelectProject}
               onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}

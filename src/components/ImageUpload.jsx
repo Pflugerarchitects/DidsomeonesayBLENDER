@@ -3,7 +3,7 @@ import { Upload, Loader } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { imagesAPI } from '../utils/api';
 
-const ImageUpload = ({ projectId, onImagesAdded }) => {
+const ImageUpload = ({ projectId, onImagesAdded, compact = false }) => {
   const [uploading, setUploading] = useState(false);
 
   const onDrop = async (acceptedFiles) => {
@@ -43,6 +43,24 @@ const ImageUpload = ({ projectId, onImagesAdded }) => {
     },
     disabled: uploading
   });
+
+  if (compact) {
+    return (
+      <button
+        {...getRootProps()}
+        className={`header-icon-button ${isDragActive ? 'drag-active' : ''} ${uploading ? 'uploading' : ''}`}
+        title="Upload images"
+        disabled={uploading}
+      >
+        <input {...getInputProps()} />
+        {uploading ? (
+          <Loader className="spinning" size={20} />
+        ) : (
+          <Upload size={20} />
+        )}
+      </button>
+    );
+  }
 
   return (
     <div

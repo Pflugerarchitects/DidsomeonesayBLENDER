@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { LogOut, Upload } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import ImageUpload from './components/ImageUpload';
 import ImageGallery from './components/ImageGallery';
 import ThemeToggle from './components/ThemeToggle';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
+import CitySelectionModal from './components/CitySelectionModal';
 import Login from './components/Login';
 import { useAuth } from './context/AuthContext';
 import { projectsAPI, imagesAPI, storageAPI } from './utils/api';
@@ -13,9 +15,20 @@ function App() {
   const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [projectToDelete, setProjectToDelete] = useState(null);
+  const [showCityModal, setShowCityModal] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [storageUsed, setStorageUsed] = useState(0);
   const STORAGE_LIMIT = 10 * 1024 * 1024 * 1024; // 10 GB in bytes
+
+  // Extract display name from project (remove CITY-TYPE- prefix)
+  const getDisplayName = (projectName) => {
+    const parts = projectName.split('-');
+    if (parts.length >= 3) {
+      // Return everything after CITY-TYPE-
+      return parts.slice(2).join('-');
+    }
+    return projectName; // Fallback to full name if format doesn't match
+  };
 
   // Load projects and storage from API on mount
   useEffect(() => {
@@ -76,15 +89,26 @@ function App() {
     }
   };
 
-  const handleCreateProject = async (projectName) => {
+  const handleShowCreateModal = () => {
+    setShowCityModal(true);
+  };
+
+  const handleCreateProject = async (cityAbbreviation, projectType, projectName) => {
+    const fullProjectName = `${cityAbbreviation}-${projectType}-${projectName}`;
+
     try {
-      const newProject = await projectsAPI.create(projectName);
+      const newProject = await projectsAPI.create(fullProjectName);
       setProjects(prev => [...prev, { ...newProject, images: [] }]);
       setActiveProjectId(newProject.id);
+      setShowCityModal(false);
     } catch (error) {
       console.error('Failed to create project:', error);
       alert('Failed to create project. Please try again.');
     }
+  };
+
+  const handleCancelCreateProject = () => {
+    setShowCityModal(false);
   };
 
   const handleSelectProject = (projectId) => {
@@ -214,33 +238,29 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-header-content">
-          <div>
+          <div style={{ flex: '1' }}>
             <h1 className="app-title">Vizzy</h1>
-            <p className="app-subtitle">Upload and view your architecture visualization images</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ flex: '1', display: 'flex', justifyContent: 'center' }}>
+            {activeProject && (
+              <h2 className="app-project-name-header">{getDisplayName(activeProject.name)}</h2>
+            )}
+          </div>
+          <div style={{ flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            {activeProject && (
+              <ImageUpload
+                projectId={activeProjectId}
+                onImagesAdded={handleImagesAdded}
+                compact={true}
+              />
+            )}
             <button
               onClick={logout}
-              style={{
-                padding: '0.5rem 1rem',
-                fontSize: '0.875rem',
-                color: '#6b7280',
-                background: 'transparent',
-                border: '1px solid rgba(107, 114, 128, 0.3)',
-                borderRadius: '0.5rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#1f2937';
-                e.currentTarget.style.borderColor = 'rgba(107, 114, 128, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#6b7280';
-                e.currentTarget.style.borderColor = 'rgba(107, 114, 128, 0.3)';
-              }}
+              className="header-icon-button"
+              aria-label="Logout"
+              title="Logout"
             >
-              Logout
+              <LogOut size={20} />
             </button>
             <ThemeToggle />
           </div>
@@ -254,9 +274,10 @@ function App() {
           isCollapsed={isSidebarCollapsed}
           storageUsed={storageUsed}
           storageLimit={STORAGE_LIMIT}
+          getDisplayName={getDisplayName}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onSelectProject={handleSelectProject}
-          onCreateProject={handleCreateProject}
+          onCreateProject={handleShowCreateModal}
           onRenameProject={handleRenameProject}
           onDeleteProject={handleDeleteProject}
           onReorderProjects={handleReorderProjects}
@@ -264,32 +285,9 @@ function App() {
 
         <main className="app-main">
           {activeProject ? (
-            <>
-              <div className="app-project-header">
-                <h2 className="app-project-name">{activeProject.name}</h2>
-                <p className="app-project-info">
-                  {(activeProject.images || []).length} {(activeProject.images || []).length === 1 ? 'image' : 'images'}
-                </p>
-              </div>
-
-              <section className="app-section">
-                <h3 className="app-section-title">Upload Images</h3>
-                <ImageUpload
-                  projectId={activeProjectId}
-                  onImagesAdded={handleImagesAdded}
-                />
-              </section>
-
-              <section className="app-section">
-                <div className="app-section-header">
-                  <h3 className="app-section-title">Gallery</h3>
-                  {(activeProject.images || []).length > 0 && (
-                    <p className="app-section-hint">Click any image to open in a new window</p>
-                  )}
-                </div>
-                <ImageGallery images={activeProject.images || []} onDeleteImage={handleDeleteImage} />
-              </section>
-            </>
+            <section className="app-section">
+              <ImageGallery images={activeProject.images || []} onDeleteImage={handleDeleteImage} />
+            </section>
           ) : (
             <div className="app-empty">
               <p>No project selected. Create a new project to get started.</p>
@@ -302,6 +300,13 @@ function App() {
         <DeleteConfirmationModal
           onConfirm={confirmDeleteProject}
           onCancel={cancelDeleteProject}
+        />
+      )}
+
+      {showCityModal && (
+        <CitySelectionModal
+          onSelectCity={handleCreateProject}
+          onCancel={handleCancelCreateProject}
         />
       )}
     </div>

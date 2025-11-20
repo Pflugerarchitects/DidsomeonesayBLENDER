@@ -6,9 +6,8 @@ const ThemeToggle = () => {
   const { mode, toggleTheme } = useTheme();
 
   return (
-    <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
-      <Sun className={`theme-toggle-icon sun ${mode === 'light' ? 'active' : ''}`} size={20} />
-      <Moon className={`theme-toggle-icon moon ${mode === 'dark' ? 'active' : ''}`} size={20} />
+    <button onClick={toggleTheme} className="header-icon-button" aria-label="Toggle theme" title="Toggle theme">
+      {mode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
     </button>
   );
 };

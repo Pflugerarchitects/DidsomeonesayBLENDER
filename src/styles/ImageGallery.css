@@ -2,6 +2,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
+  transform: translateZ(0);
+  will-change: contents;
 }
 
 @media (min-width: 768px) {
@@ -30,10 +32,10 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-  will-change: transform;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   transform: translateZ(0);
   backface-visibility: hidden;
+  contain: layout style paint;
 }
 
 .image-gallery-item:hover {
@@ -48,7 +50,6 @@
   object-fit: cover;
   display: block;
   transition: transform 0.2s ease;
-  will-change: transform;
 }
 
 .image-gallery-item:hover img {
@@ -102,7 +103,7 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
   color: var(--text-secondary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

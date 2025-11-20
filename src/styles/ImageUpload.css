@@ -60,3 +60,44 @@
   animation: spin 1s linear infinite;
   color: var(--accent-blue);
 }
+
+/* Compact Upload Button */
+.image-upload-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: var(--accent-blue);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.image-upload-compact:hover:not(:disabled) {
+  background-color: #0056d6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.image-upload-compact:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.image-upload-compact:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.image-upload-compact.drag-active {
+  background-color: #0056d6;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+}
+
+.image-upload-compact .spinning {
+  animation: spin 1s linear infinite;
+}

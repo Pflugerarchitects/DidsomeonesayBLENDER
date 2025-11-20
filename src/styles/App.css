@@ -8,8 +8,6 @@
 
 .app-header {
   background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-default);
-  box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -22,6 +20,13 @@
 }
 
 .app-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.app-project-name-header {
   font-size: var(--font-size-2xl);
   font-weight: 600;
   color: var(--text-primary);
@@ -42,24 +47,33 @@
 
 .app-main {
   position: absolute;
-  left: 280px;
+  left: calc(280px + var(--spacing-md) * 2);
   right: 0;
   top: 0;
   bottom: 0;
   overflow-y: auto;
   padding: var(--spacing-xl) var(--spacing-lg);
-  transition: all 0.3s ease;
+  transition: left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
 }
 
 .app-body.sidebar-collapsed .app-main {
-  left: 60px;
-  right: 0;
+  left: calc(60px + var(--spacing-md) * 2);
 }
 
 .app-project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
   margin-bottom: var(--spacing-xl);
   padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--border-light);
+}
+
+.app-project-info-wrapper {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
 }
 
 .app-project-name {
@@ -73,6 +87,7 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin-top: var(--spacing-xs);
+  margin-bottom: 0;
 }
 
 .app-section {
@@ -105,4 +120,28 @@
   height: 100%;
   color: var(--text-secondary);
   font-size: var(--font-size-base);
+}
+
+/* Header Icon Buttons */
+.header-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.header-icon-button:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+  transform: translateY(-1px);
 }
