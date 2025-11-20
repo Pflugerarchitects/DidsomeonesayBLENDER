@@ -89,6 +89,21 @@ function handleUpdateImage($db) {
         error_log("Updating image ID {$imageId}: display_order {$existing['display_order']} → {$params['display_order']}");
     }
 
+    if (array_key_exists('phase', $data)) {
+        // Validate phase value
+        $validPhases = ['SD', 'DD', 'Final', 'Approved', null];
+        $phase = $data['phase'] === '' ? null : $data['phase'];
+
+        if ($phase !== null && !in_array($phase, $validPhases)) {
+            sendError('Invalid phase value. Must be: SD, DD, Final, Approved, or null');
+        }
+
+        $updates[] = "phase = :phase";
+        $params['phase'] = $phase;
+
+        error_log("Updating image ID {$imageId}: phase → " . ($phase ?? 'NULL'));
+    }
+
     if (empty($updates)) {
         sendError('No fields to update');
     }

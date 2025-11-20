@@ -1,7 +1,8 @@
 import React, { useRef, memo, useState, useEffect } from 'react';
-import { Trash2, Download } from 'lucide-react';
+import { Trash2, Download, Tag } from 'lucide-react';
 import LazyImage from './LazyImage';
-import { getImageUrl } from '../utils/api';
+import { getImageUrl, imagesAPI } from '../utils/api';
+import PhaseFilter from './PhaseFilter';
 
 const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
   const imageWindowRef = useRef(null);
@@ -12,6 +13,8 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
   const [localImages, setLocalImages] = useState(images);
   const [isSaving, setIsSaving] = useState(false);
   const [touchDragId, setTouchDragId] = useState(null);
+  const [selectedPhases, setSelectedPhases] = useState([]);
+  const [showPhaseDropdown, setShowPhaseDropdown] = useState(null);
 
   // Sync localImages with prop changes (after successful save or external updates)
   useEffect(() => {
@@ -19,6 +22,45 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
       setLocalImages(images);
     }
   }, [images, draggedItemId]);
+
+  // Filter images by selected phases
+  const filteredImages = selectedPhases.length > 0
+    ? localImages.filter(image => selectedPhases.includes(image.phase))
+    : localImages;
+
+  const handleTogglePhase = (phase) => {
+    setSelectedPhases(prev =>
+      prev.includes(phase)
+        ? prev.filter(p => p !== phase)
+        : [...prev, phase]
+    );
+  };
+
+  const handleClearPhaseFilters = () => {
+    setSelectedPhases([]);
+  };
+
+  const handlePhaseChange = async (e, imageId) => {
+    e.stopPropagation();
+    const newPhase = e.target.value || null;
+
+    try {
+      // Update via API
+      await imagesAPI.update(imageId, { phase: newPhase });
+
+      // Update local state
+      setLocalImages(prev =>
+        prev.map(img =>
+          img.id === imageId ? { ...img, phase: newPhase } : img
+        )
+      );
+
+      setShowPhaseDropdown(null);
+    } catch (error) {
+      console.error('Failed to update phase:', error);
+      alert('Failed to update phase. Please try again.');
+    }
+  };
 
   const handleDownload = (e, image) => {
     e.stopPropagation();
@@ -227,6 +269,11 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
 
   return (
     <>
+      <PhaseFilter
+        selectedPhases={selectedPhases}
+        onTogglePhase={handleTogglePhase}
+        onClearFilters={handleClearPhaseFilters}
+      />
       {isSaving && (
         <div className="image-gallery-saving-indicator">
           <div className="saving-spinner"></div>
@@ -234,7 +281,7 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
         </div>
       )}
       <div className={`image-gallery ${draggedItemId ? 'dragging-active' : ''} ${isSaving ? 'saving' : ''}`}>
-        {localImages.map((image) => {
+        {filteredImages.map((image) => {
         const imageUrl = getImageUrl(image.file_path);
         return (
           <div
@@ -270,8 +317,30 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
                 <Trash2 size={18} />
               </button>
             </div>
+            {image.phase && (
+              <div className={`image-phase-badge phase-${image.phase.toLowerCase()}`}>
+                {image.phase}
+              </div>
+            )}
             <LazyImage src={imageUrl} alt={image.filename} />
-            <div className="image-gallery-item-name">{image.filename}</div>
+            <div className="image-gallery-item-footer">
+              <div className="image-gallery-item-name">{image.filename}</div>
+              <div className="image-phase-selector">
+                <select
+                  value={image.phase || ''}
+                  onChange={(e) => handlePhaseChange(e, image.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="image-phase-dropdown"
+                  aria-label="Assign phase"
+                >
+                  <option value="">Unassigned</option>
+                  <option value="SD">SD</option>
+                  <option value="DD">DD</option>
+                  <option value="Final">Final</option>
+                  <option value="Approved">Approved</option>
+                </select>
+              </div>
+            </div>
           </div>
         );
       })}
