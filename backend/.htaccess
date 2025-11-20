@@ -1,5 +1,10 @@
 # Apache Configuration for Vizzy Backend
 
+# Allow all HTTP methods including PUT
+<Limit GET POST PUT DELETE OPTIONS>
+    Require all granted
+</Limit>
+
 # Enable RewriteEngine
 <IfModule mod_rewrite.c>
     RewriteEngine On

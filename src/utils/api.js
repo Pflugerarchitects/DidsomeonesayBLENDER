@@ -155,20 +155,19 @@ export const imagesAPI = {
   },
 
   /**
-   * Reorder images
+   * Reorder images (batch update via POST to avoid PUT method issues on shared hosting)
    */
   async reorder(imagesArray) {
     console.log(`📤 Reordering ${imagesArray.length} images...`);
 
-    // Update display_order for each image individually
-    const promises = imagesArray.map((image, index) => {
-      console.log(`  - Image ID ${image.id} → display_order: ${index}`);
-      return this.update(image.id, { display_order: index });
+    // Send all images in a single POST request
+    const data = await apiFetch('reorder-images.php', {
+      method: 'POST',
+      body: JSON.stringify({ images: imagesArray }),
     });
 
-    const results = await Promise.all(promises);
-    console.log('📥 All updates completed:', results.length);
-    return results;
+    console.log('📥 Batch reorder completed:', data.updated, 'of', data.total, 'images');
+    return data;
   },
 };
 
