@@ -9,7 +9,7 @@ Vizzy is a production-ready full-stack architecture visualization app for managi
 
 ## Project Naming Convention
 
-Projects follow a structured naming format: `CITY-TYPE-projectname`
+Projects follow a structured naming format: `CITY-TYPE-NUMBER-projectname`
 
 **City Codes:**
 - DAL - Dallas
@@ -26,13 +26,17 @@ Projects follow a structured naming format: `CITY-TYPE-projectname`
 - BP - Bond Proposal
 - UQ - Unique
 
-**Example:** `DAL-ES-NewElementary` (Dallas Elementary School project named "NewElementary")
+**Project Number Format:** XX-XXX (e.g., 12-345)
+
+**Example:** `AUS-HS-24-156-Georgetown` (Austin High School, project 24-156, named "Georgetown")
 
 **Display Behavior:**
-- Internal storage: Full name with prefix (e.g., `DAL-ES-NewElementary`)
-- UI Display: Only the project name part (e.g., `NewElementary`)
-- Editing: Users edit only the name part; prefix is preserved automatically
+- Internal storage: Full name with prefix (e.g., `AUS-HS-24-156-Georgetown`)
+- UI Display (Header): Project number + name (e.g., `24-156-Georgetown`)
+- UI Display (Sidebar): Project number + name (e.g., `24-156-Georgetown`)
+- Editing: Users edit only the name part; prefix and number are preserved automatically
 - Filtering: City and Type are extracted from the prefix for multi-select filters
+- Legacy Support: Old format `CITY-TYPE-name` still supported for backward compatibility
 
 ## Development Commands
 
@@ -76,25 +80,37 @@ VITE_API_URL=https://vizzy.pflugerarchitects.com/api
 - Handles CRUD operations via API calls
 - Controls active project selection and sidebar collapse state
 - Coordinates storage tracking (10GB limit)
-- Implements `getDisplayName()` utility to extract project name from CITY-TYPE-name format
-- Manages CitySelectionModal state for three-step project creation
-- Header layout: Left (Vizzy logo) | Center (Project name) | Right (Upload, Logout, Theme icons)
+- Implements `getFullDisplayName()` utility to extract number + name from CITY-TYPE-NUMBER-name format
+- Manages CitySelectionModal state for four-step project creation
+- Header layout:
+  - Left (Vizzy logo)
+  - Center (Project title with Apple-inspired typography - 42px SF Pro Display, font-weight 600, -0.02em letter spacing)
+  - Right (Frameless icon buttons: Upload, Logout, Theme)
+- Header styling: Title positioned 92px down from center, generous spacing (32px gap for future elements)
 
 **Sidebar.jsx & ProjectList.jsx**
 - Floating sidebar with rounded corners, shadow, and minimal design
+- **Search Bar:** Full-text search above filters with clear button
+- **Collapsible Filters:** Click header with chevron to expand/collapse filter bubbles
+  - Active filter count badge shows total selected filters
+  - Clear all button appears when filters are active
 - Multi-select bubble filters for City and Project Type (OR within category, AND between categories)
+  - Pill-shaped buttons (20px border-radius) with subtle borders
+  - Hover: scale(1.1) animation with background highlight and blue border
+  - Active: Blue background with white text and shadow glow
 - Drag-and-drop project reordering (display_order field)
-- Double-click to rename projects (shows CITY-TYPE- prefix as read-only, edits name only)
+- Double-click to rename projects (shows CITY-TYPE-NUMBER- prefix as read-only, edits name only)
 - Delete button (prevents deleting last project)
 - Storage progress bar with color coding (green < 75%, orange < 90%, red >= 90%)
-- Projects display only name part without CITY-TYPE prefix
+- Projects display number + name without CITY-TYPE prefix (e.g., "24-156-Georgetown")
 
-**CitySelectionModal.jsx** (Three-step project creation)
+**CitySelectionModal.jsx** (Four-step project creation)
 - Step 1: City selection (grid of city buttons with abbreviations)
 - Step 2: Project type selection (grid of type buttons)
-- Step 3: Project name input (shows non-editable CITY-TYPE- prefix)
+- Step 3: Project number input (XX-XXX format with auto-dash formatting and validation)
+- Step 4: Project name input (shows non-editable CITY-TYPE-NUMBER- prefix)
 - Modal renders at App level for proper screen centering
-- Supports back navigation and ESC key to cancel
+- Supports back navigation between steps and ESC key to cancel
 
 **ImageUpload.jsx**
 - Uses react-dropzone for drag-and-drop file selection
@@ -106,9 +122,12 @@ VITE_API_URL=https://vizzy.pflugerarchitects.com/api
 
 **ImageGallery.jsx & LazyImage.jsx**
 - Responsive grid layout (2-4 columns based on viewport)
+- Generous top spacing (168px padding) for visual breathing room
 - Lazy loading with Intersection Observer API
 - Click to open full-size in new window (dual-monitor workflow)
 - Download and delete actions per image
+- Phase assignment dropdown on each image (SD, DD, Final, Approved) via hover footer
+- Phase badges display on images when assigned (colored badges in top-left corner)
 - Performance optimizations:
   - CSS `contain: layout style paint` on gallery items for layout isolation
   - React.memo() on both ImageGallery and LazyImage components
@@ -173,10 +192,11 @@ All endpoints are in backend/api/ and follow RESTful conventions:
 ### Header Icon Buttons
 All header action buttons (Upload, Logout, Theme) use consistent styling via `.header-icon-button` class:
 - Size: 40x40px
-- Background: `var(--bg-secondary)` with border
+- Background: Transparent (frameless design)
 - Icon size: 20px
-- Hover: Lift effect with `translateY(-1px)`
+- Hover: scale(1.1) zoom effect with subtle background
 - Consistent spacing: 0.75rem gap
+- Minimal, clean appearance matching Apple design language
 
 ### Modal Centering
 Modals (CitySelectionModal, DeleteConfirmationModal) render at App root level (not within sidebar):
@@ -193,11 +213,18 @@ Modals (CitySelectionModal, DeleteConfirmationModal) render at App root level (n
 - Collapse transition: 0.2s cubic-bezier easing on width only
 - Collapsed width: 60px, Expanded width: 280px
 
-### Multi-Select Filters
-- Filter bubbles: Pill-shaped buttons with abbreviations
-- Active state: Blue background (`var(--accent-blue)`)
-- Filtering logic: OR within category (multiple cities), AND between categories (city AND type)
-- Clear all button appears when filters are active
+### Multi-Select Filters (Sidebar)
+- **Search functionality:** Real-time project name search with clear button
+- **Collapsible UI:** Click "Filters" header with chevron to toggle visibility
+- **Filter bubbles:** Pill-shaped buttons (20px border-radius) with abbreviations
+  - Default: Subtle background with 1px border
+  - Hover: scale(1.1) animation + blue border + background highlight
+  - Active: Blue background (`var(--accent-blue)`) + white text + shadow glow
+- **Filtering logic:** OR within category (multiple cities), AND between categories (city AND type)
+- **Clear controls:**
+  - Individual search clear (X button)
+  - Clear all filters button (appears when any filter active)
+- **Active indicator:** Badge showing count of active filters
 
 ## Common Patterns
 
@@ -233,23 +260,30 @@ When modifying projects/images:
 1. User clicks "New Project" button in sidebar
 2. App.jsx shows CitySelectionModal (Step 1: City selection)
 3. User selects city → Modal advances to Step 2 (Project type)
-4. User selects type → Modal advances to Step 3 (Name input)
-5. User enters name with CITY-TYPE- prefix shown as read-only
-6. On submit: App.jsx calls `projectsAPI.create(fullName)`
-7. New project added to state and set as active
+4. User selects type → Modal advances to Step 3 (Project number input)
+5. User enters project number (XX-XXX format, auto-formats dash) → Modal advances to Step 4
+6. User enters name with CITY-TYPE-NUMBER- prefix shown as read-only
+7. On submit: App.jsx calls `projectsAPI.create(fullName)` with format `CITY-TYPE-NUMBER-name`
+8. New project added to state and set as active
 
 ### Display Name Extraction
-Use `getDisplayName(projectName)` utility to show only the project name part:
+Use `getFullDisplayName(projectName)` utility to show project number + name:
 ```javascript
-const getDisplayName = (projectName) => {
+const getFullDisplayName = (projectName) => {
   const parts = projectName.split('-');
-  if (parts.length >= 3) {
-    return parts.slice(2).join('-'); // Everything after CITY-TYPE-
+  if (parts.length >= 4) {
+    // New format: CITY-TYPE-NUMBER-name (return NUMBER-name)
+    return parts.slice(2).join('-');
+  } else if (parts.length >= 3) {
+    // Legacy format: CITY-TYPE-name (return name only)
+    return parts.slice(2).join('-');
   }
   return projectName; // Fallback
 };
 ```
-Applied in: Header title, Sidebar project list, Project editing
+Applied in: Header title (42px Apple typography), Sidebar project list, Project editing
+
+For editing, use separate function to extract just the name part while preserving CITY-TYPE-NUMBER prefix.
 
 ## Production Deployment
 
@@ -341,4 +375,50 @@ App is deployed on Bluehost at https://vizzy.pflugerarchitects.com
 
 ---
 
-**Last Updated:** 2025-01-20 (Updated with project naming, filters, and performance optimizations)
+## Recent UI/UX Updates (2025-01-20)
+
+### Apple-Inspired Design Language
+- **Header Title Typography:**
+  - Font: SF Pro Display (Apple system font stack)
+  - Size: 42px (large, prominent)
+  - Weight: 600 (semibold)
+  - Letter spacing: -0.02em (tight, Apple-style)
+  - Line height: 1.1
+  - Positioning: 92px down from center for visual balance
+
+- **Spacing Philosophy:**
+  - Generous whitespace throughout
+  - Image gallery: 168px top padding for breathing room
+  - Header title gap: 32px for future expansion
+  - Consistent use of scale(1.1) hover animations
+
+- **Icon Button Design:**
+  - Frameless, transparent backgrounds
+  - scale(1.1) hover zoom effect
+  - Subtle background on hover only
+  - Minimal, clean appearance
+
+- **Filter Bubble Interactions:**
+  - Pill shape with 20px border-radius
+  - scale(1.1) hover animation
+  - Blue active state with shadow glow
+  - Consistent across sidebar and removed phase filters
+
+### Sidebar Enhancements
+- **Search Bar:** Added full-text project search above filters
+- **Collapsible Filters:** Click to expand/collapse with chevron icon
+- **Active Filter Badge:** Shows count of selected filters
+- **Clear All:** One-click to reset all filters and search
+
+### Removed Features
+- **Phase Filters (Header):** Removed from header after testing - phase assignment still available on individual images via dropdown
+
+### Database Schema Updates
+- **vizzy_images table:** Added `phase` column (VARCHAR(20), nullable)
+  - Valid values: 'SD', 'DD', 'Final', 'Approved', NULL
+  - Indexed for filtering performance
+  - Migration: `backend/migrations/add_image_phase.sql`
+
+---
+
+**Last Updated:** 2025-01-20 (Major UI refresh with Apple design language, search, and collapsible filters)

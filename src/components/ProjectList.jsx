@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Folder, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { formatBytes } from '../utils/api';
 
 const ProjectList = ({ projects, activeProjectId, getDisplayName, onSelectProject, onRenameProject, onDeleteProject, onReorderProjects }) => {
@@ -25,7 +25,11 @@ const ProjectList = ({ projects, activeProjectId, getDisplayName, onSelectProjec
     setEditingName(displayName);
     // Store the prefix to reconstruct full name on save
     const parts = project.name.split('-');
-    if (parts.length >= 3) {
+    if (parts.length >= 4) {
+      // New format: CITY-TYPE-NUMBER-name
+      setEditingPrefix(`${parts[0]}-${parts[1]}-${parts[2]}-`);
+    } else if (parts.length >= 3) {
+      // Legacy format: CITY-TYPE-name
       setEditingPrefix(`${parts[0]}-${parts[1]}-`);
     } else {
       setEditingPrefix('');
@@ -132,9 +136,6 @@ const ProjectList = ({ projects, activeProjectId, getDisplayName, onSelectProjec
             onDrop={(e) => handleDrop(e, project.id)}
             onDragEnd={handleDragEnd}
           >
-            <div className="project-item-icon">
-              <Folder size={24} />
-            </div>
             <div className="project-item-content">
               {isEditing ? (
                 <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>

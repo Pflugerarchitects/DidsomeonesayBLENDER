@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Plus, HardDrive, Filter, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, HardDrive, Filter, X, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import ProjectList from './ProjectList';
 import { formatBytes } from '../utils/api';
 
 const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onToggleCollapse, onSelectProject, onCreateProject, onRenameProject, onDeleteProject, onReorderProjects, storageUsed, storageLimit }) => {
   const [selectedCities, setSelectedCities] = useState([]);
   const [selectedProjectTypes, setSelectedProjectTypes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   const cities = [
     { abbreviation: 'DAL', name: 'Dallas' },
@@ -28,9 +30,17 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onTog
     onCreateProject();
   };
 
-  // Filter projects based on selected cities and project types
+  // Filter projects based on search term, selected cities, and project types
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
+      // Search filter
+      const displayName = getDisplayName(project.name);
+      const searchMatch = searchTerm === '' ||
+        displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (!searchMatch) return false;
+
       // Parse project name format: CITY-TYPE-name
       const parts = project.name.split('-');
       if (parts.length < 2) return true; // Show projects that don't follow the format
@@ -43,7 +53,7 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onTog
 
       return cityMatch && typeMatch;
     });
-  }, [projects, selectedCities, selectedProjectTypes]);
+  }, [projects, selectedCities, selectedProjectTypes, searchTerm, getDisplayName]);
 
   const handleToggleCity = (cityAbbr) => {
     setSelectedCities(prev =>
@@ -64,9 +74,10 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onTog
   const handleClearFilters = () => {
     setSelectedCities([]);
     setSelectedProjectTypes([]);
+    setSearchTerm('');
   };
 
-  const hasActiveFilters = selectedCities.length > 0 || selectedProjectTypes.length > 0;
+  const hasActiveFilters = selectedCities.length > 0 || selectedProjectTypes.length > 0 || searchTerm !== '';
 
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -88,42 +99,77 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onTog
       {!isCollapsed && (
         <>
           <div className="sidebar-content">
+            {/* Search Bar */}
+            <div className="project-search">
+              <div className="project-search-input-wrapper">
+                <Search size={16} className="project-search-icon" />
+                <input
+                  type="text"
+                  className="project-search-input"
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && (
+                  <button
+                    className="project-search-clear"
+                    onClick={() => setSearchTerm('')}
+                    aria-label="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Collapsible Filters */}
             <div className="project-filters">
-              <div className="project-filter-group">
-                <div className="project-filter-header">
-                  <label className="project-filter-label">City</label>
+              <div className="project-filters-toggle" onClick={() => setFiltersExpanded(!filtersExpanded)}>
+                <div className="project-filters-toggle-left">
+                  <Filter size={16} />
+                  <span className="project-filters-toggle-label">Filters</span>
+                  {hasActiveFilters && <span className="project-filters-active-indicator">{selectedCities.length + selectedProjectTypes.length}</span>}
+                </div>
+                {filtersExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </div>
+
+              {filtersExpanded && (
+                <>
                   {hasActiveFilters && (
                     <button
-                      className="project-filters-clear"
+                      className="project-filters-clear-all"
                       onClick={handleClearFilters}
                       title="Clear all filters"
                     >
                       <X size={14} />
+                      Clear all
                     </button>
                   )}
-                </div>
-                <div className="filter-bubbles">
-                  {cities.map(city => (
-                    <button
-                      key={city.abbreviation}
-                      className={`filter-bubble ${selectedCities.includes(city.abbreviation) ? 'active' : ''}`}
-                      onClick={() => handleToggleCity(city.abbreviation)}
-                      title={city.name}
-                    >
-                      {city.abbreviation}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
-              <div className="project-filter-group">
-                <label className="project-filter-label">Type</label>
-                <div className="filter-bubbles">
-                  {projectTypes.map(type => (
-                    <button
-                      key={type.abbreviation}
-                      className={`filter-bubble ${selectedProjectTypes.includes(type.abbreviation) ? 'active' : ''}`}
-                      onClick={() => handleToggleProjectType(type.abbreviation)}
+                  <div className="project-filter-group">
+                    <label className="project-filter-label">City</label>
+                    <div className="filter-bubbles">
+                      {cities.map(city => (
+                        <button
+                          key={city.abbreviation}
+                          className={`filter-bubble ${selectedCities.includes(city.abbreviation) ? 'active' : ''}`}
+                          onClick={() => handleToggleCity(city.abbreviation)}
+                          title={city.name}
+                        >
+                          {city.abbreviation}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="project-filter-group">
+                    <label className="project-filter-label">Type</label>
+                    <div className="filter-bubbles">
+                      {projectTypes.map(type => (
+                        <button
+                          key={type.abbreviation}
+                          className={`filter-bubble ${selectedProjectTypes.includes(type.abbreviation) ? 'active' : ''}`}
+                          onClick={() => handleToggleProjectType(type.abbreviation)}
                       title={type.name}
                     >
                       {type.abbreviation}
@@ -131,6 +177,8 @@ const Sidebar = ({ projects, activeProjectId, isCollapsed, getDisplayName, onTog
                   ))}
                 </div>
               </div>
+                </>
+              )}
             </div>
 
             <button

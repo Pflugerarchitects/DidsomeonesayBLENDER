@@ -231,77 +231,94 @@
   display: block;
 }
 
-/* Phase Filter */
+/* Phase Filter - Apple Aesthetic (Header Version) */
 .phase-filter-container {
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  padding: 0;
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .phase-filter-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
+  display: none;
 }
 
 .phase-filter-label {
-  flex: 1;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  opacity: 0.7;
 }
 
 .phase-filter-clear {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 500;
   background: none;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
+  border: none;
+  border-radius: 3px;
+  color: var(--accent-blue);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
+  opacity: 0.7;
 }
 
 .phase-filter-clear:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--accent-blue);
-  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.08);
+  opacity: 1;
 }
 
 .phase-filter-buttons {
   display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
+  gap: 8px;
+  background: transparent;
+  padding: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .phase-filter-button {
-  padding: 6px 16px;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  background: var(--bg-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background-color: var(--bg-secondary);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: 20px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .phase-filter-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  transform: scale(1.1);
   border-color: var(--accent-blue);
-  color: var(--accent-blue);
-  background: var(--bg-tertiary);
 }
 
 .phase-filter-button.active {
   background: var(--accent-blue);
-  border-color: var(--accent-blue);
   color: #ffffff;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  opacity: 1;
+}
+
+.phase-filter-button.active:hover {
+  background: var(--accent-blue-hover);
+  transform: scale(1.1);
 }
 
 /* Phase Badge */

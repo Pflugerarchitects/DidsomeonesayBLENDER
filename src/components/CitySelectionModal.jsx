@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const CitySelectionModal = ({ onSelectCity, onCancel }) => {
-  const [step, setStep] = useState('city'); // 'city', 'type', or 'name'
+  const [step, setStep] = useState('city'); // 'city', 'type', 'number', or 'name'
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
+  const [projectNumber, setProjectNumber] = useState('');
   const [projectName, setProjectName] = useState('');
   const inputRef = useRef(null);
 
@@ -28,7 +29,7 @@ const CitySelectionModal = ({ onSelectCity, onCancel }) => {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
-        if (step === 'name' || step === 'type') {
+        if (step === 'name' || step === 'type' || step === 'number') {
           handleBack();
         } else {
           onCancel();
@@ -40,9 +41,9 @@ const CitySelectionModal = ({ onSelectCity, onCancel }) => {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onCancel, step]);
 
-  // Focus input when step changes to name
+  // Focus input when step changes to number or name
   useEffect(() => {
-    if (step === 'name' && inputRef.current) {
+    if ((step === 'number' || step === 'name') && inputRef.current) {
       inputRef.current.focus();
     }
   }, [step]);
@@ -54,17 +55,42 @@ const CitySelectionModal = ({ onSelectCity, onCancel }) => {
 
   const handleTypeClick = (abbreviation) => {
     setSelectedType(abbreviation);
-    setProjectName('');
-    setStep('name');
+    setProjectNumber('');
+    setStep('number');
+  };
+
+  const handleNumberSubmit = (e) => {
+    e.preventDefault();
+    if (projectNumber.trim() && /^\d{2}-\d{3}$/.test(projectNumber)) {
+      setProjectName('');
+      setStep('name');
+    }
+  };
+
+  const handleNumberChange = (e) => {
+    let value = e.target.value.replace(/[^\d-]/g, ''); // Only allow digits and dash
+
+    // Auto-format: add dash after 2 digits
+    if (value.length === 2 && !value.includes('-')) {
+      value = value + '-';
+    }
+
+    // Limit to xx-xxx format
+    if (value.length <= 6) {
+      setProjectNumber(value);
+    }
   };
 
   const handleBack = () => {
     if (step === 'type') {
       setStep('city');
       setSelectedCity(null);
-    } else if (step === 'name') {
+    } else if (step === 'number') {
       setStep('type');
       setSelectedType(null);
+      setProjectNumber('');
+    } else if (step === 'name') {
+      setStep('number');
       setProjectName('');
     }
   };
@@ -72,7 +98,7 @@ const CitySelectionModal = ({ onSelectCity, onCancel }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (projectName.trim()) {
-      onSelectCity(selectedCity, selectedType, projectName.trim());
+      onSelectCity(selectedCity, selectedType, projectNumber, projectName.trim());
     }
   };
 
@@ -158,6 +184,60 @@ const CitySelectionModal = ({ onSelectCity, onCancel }) => {
     );
   }
 
+  if (step === 'number') {
+    const isValidNumber = /^\d{2}-\d{3}$/.test(projectNumber);
+
+    return (
+      <div className="modal-overlay" onClick={onCancel}>
+        <div className="modal-content city-selection-modal" onClick={(e) => e.stopPropagation()}>
+          <h2 className="modal-title">Enter Project Number</h2>
+
+          <p className="modal-message">
+            Enter the project number (format: XX-XXX):
+          </p>
+
+          <form onSubmit={handleNumberSubmit} className="project-name-form">
+            <div className="project-name-input-wrapper">
+              <span className="project-name-prefix">{selectedCity}-{selectedType}-</span>
+              <input
+                ref={inputRef}
+                type="text"
+                className="project-name-input"
+                value={projectNumber}
+                onChange={handleNumberChange}
+                placeholder="12-345"
+                autoComplete="off"
+                maxLength={6}
+              />
+            </div>
+            {projectNumber && !isValidNumber && (
+              <p className="modal-error-message">
+                Format must be XX-XXX (e.g., 12-345)
+              </p>
+            )}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-button modal-button-cancel"
+                onClick={handleBack}
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                className="modal-button modal-button-primary"
+                disabled={!isValidNumber}
+              >
+                Next
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-content city-selection-modal" onClick={(e) => e.stopPropagation()}>
@@ -169,7 +249,7 @@ const CitySelectionModal = ({ onSelectCity, onCancel }) => {
 
         <form onSubmit={handleSubmit} className="project-name-form">
           <div className="project-name-input-wrapper">
-            <span className="project-name-prefix">{selectedCity}-{selectedType}-</span>
+            <span className="project-name-prefix">{selectedCity}-{selectedType}-{projectNumber}-</span>
             <input
               ref={inputRef}
               type="text"

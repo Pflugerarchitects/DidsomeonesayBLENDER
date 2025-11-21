@@ -26,7 +26,13 @@
 .app-header-center {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin-top: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
 }
 
 .app-header-right {
@@ -45,10 +51,13 @@
 }
 
 .app-project-name-header {
-  font-size: var(--font-size-2xl);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  font-size: 42px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .app-subtitle {
@@ -70,7 +79,7 @@
   top: 0;
   bottom: 0;
   overflow-y: auto;
-  padding: var(--spacing-xl) var(--spacing-lg);
+  padding: 168px var(--spacing-lg) var(--spacing-xl);
   transition: left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
 }
@@ -148,8 +157,8 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-light);
+  background-color: transparent;
+  border: none;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
@@ -159,7 +168,6 @@
 
 .header-icon-button:hover {
   background-color: var(--bg-tertiary);
-  border-color: var(--border-default);
   color: var(--text-primary);
-  transform: translateY(-1px);
+  transform: scale(1.1);
 }

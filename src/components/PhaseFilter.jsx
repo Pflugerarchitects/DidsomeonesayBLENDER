@@ -1,5 +1,4 @@
 import React from 'react';
-import { Filter, X } from 'lucide-react';
 
 const PhaseFilter = ({ selectedPhases, onTogglePhase, onClearFilters }) => {
   const phases = [
@@ -14,8 +13,7 @@ const PhaseFilter = ({ selectedPhases, onTogglePhase, onClearFilters }) => {
   return (
     <div className="phase-filter-container">
       <div className="phase-filter-header">
-        <Filter size={16} />
-        <span className="phase-filter-label">Filter by Phase</span>
+        <span className="phase-filter-label">Phase</span>
         {hasActiveFilters && (
           <button
             className="phase-filter-clear"
@@ -23,7 +21,6 @@ const PhaseFilter = ({ selectedPhases, onTogglePhase, onClearFilters }) => {
             title="Clear phase filters"
             aria-label="Clear phase filters"
           >
-            <X size={14} />
             Clear
           </button>
         )}

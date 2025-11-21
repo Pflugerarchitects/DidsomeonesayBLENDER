@@ -20,11 +20,27 @@ function App() {
   const [storageUsed, setStorageUsed] = useState(0);
   const STORAGE_LIMIT = 10 * 1024 * 1024 * 1024; // 10 GB in bytes
 
-  // Extract display name from project (remove CITY-TYPE- prefix)
+  // Extract display name from project (remove CITY-TYPE-NUMBER- prefix)
   const getDisplayName = (projectName) => {
     const parts = projectName.split('-');
-    if (parts.length >= 3) {
-      // Return everything after CITY-TYPE-
+    if (parts.length >= 4) {
+      // New format: CITY-TYPE-NUMBER-name (return everything after CITY-TYPE-NUMBER-)
+      return parts.slice(3).join('-');
+    } else if (parts.length >= 3) {
+      // Legacy format: CITY-TYPE-name (return everything after CITY-TYPE-)
+      return parts.slice(2).join('-');
+    }
+    return projectName; // Fallback to full name if format doesn't match
+  };
+
+  // Get full display name with project number (remove only CITY-TYPE prefix)
+  const getFullDisplayName = (projectName) => {
+    const parts = projectName.split('-');
+    if (parts.length >= 4) {
+      // New format: CITY-TYPE-NUMBER-name (return NUMBER-name)
+      return parts.slice(2).join('-');
+    } else if (parts.length >= 3) {
+      // Legacy format: CITY-TYPE-name (return name only)
       return parts.slice(2).join('-');
     }
     return projectName; // Fallback to full name if format doesn't match
@@ -93,8 +109,8 @@ function App() {
     setShowCityModal(true);
   };
 
-  const handleCreateProject = async (cityAbbreviation, projectType, projectName) => {
-    const fullProjectName = `${cityAbbreviation}-${projectType}-${projectName}`;
+  const handleCreateProject = async (cityAbbreviation, projectType, projectNumber, projectName) => {
+    const fullProjectName = `${cityAbbreviation}-${projectType}-${projectNumber}-${projectName}`;
 
     try {
       const newProject = await projectsAPI.create(fullProjectName);
@@ -264,7 +280,7 @@ function App() {
           </div>
           <div className="app-header-center">
             {activeProject && (
-              <h2 className="app-project-name-header">{getDisplayName(activeProject.name)}</h2>
+              <h2 className="app-project-name-header">{getFullDisplayName(activeProject.name)}</h2>
             )}
           </div>
           <div className="app-header-right">
@@ -295,7 +311,7 @@ function App() {
           isCollapsed={isSidebarCollapsed}
           storageUsed={storageUsed}
           storageLimit={STORAGE_LIMIT}
-          getDisplayName={getDisplayName}
+          getDisplayName={getFullDisplayName}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onSelectProject={handleSelectProject}
           onCreateProject={handleShowCreateModal}

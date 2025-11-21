@@ -2,7 +2,6 @@ import React, { useRef, memo, useState, useEffect } from 'react';
 import { Trash2, Download, Tag } from 'lucide-react';
 import LazyImage from './LazyImage';
 import { getImageUrl, imagesAPI } from '../utils/api';
-import PhaseFilter from './PhaseFilter';
 
 const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
   const imageWindowRef = useRef(null);
@@ -13,7 +12,6 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
   const [localImages, setLocalImages] = useState(images);
   const [isSaving, setIsSaving] = useState(false);
   const [touchDragId, setTouchDragId] = useState(null);
-  const [selectedPhases, setSelectedPhases] = useState([]);
   const [showPhaseDropdown, setShowPhaseDropdown] = useState(null);
 
   // Sync localImages with prop changes (after successful save or external updates)
@@ -23,22 +21,8 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
     }
   }, [images, draggedItemId]);
 
-  // Filter images by selected phases
-  const filteredImages = selectedPhases.length > 0
-    ? localImages.filter(image => selectedPhases.includes(image.phase))
-    : localImages;
-
-  const handleTogglePhase = (phase) => {
-    setSelectedPhases(prev =>
-      prev.includes(phase)
-        ? prev.filter(p => p !== phase)
-        : [...prev, phase]
-    );
-  };
-
-  const handleClearPhaseFilters = () => {
-    setSelectedPhases([]);
-  };
+  // No filtering - show all images
+  const filteredImages = localImages;
 
   const handlePhaseChange = async (e, imageId) => {
     e.stopPropagation();
@@ -269,11 +253,6 @@ const ImageGallery = memo(({ images, onDeleteImage, onReorderImages }) => {
 
   return (
     <>
-      <PhaseFilter
-        selectedPhases={selectedPhases}
-        onTogglePhase={handleTogglePhase}
-        onClearFilters={handleClearPhaseFilters}
-      />
       {isSaving && (
         <div className="image-gallery-saving-indicator">
           <div className="saving-spinner"></div>
